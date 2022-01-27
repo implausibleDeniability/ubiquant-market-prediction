@@ -3,3 +3,6 @@ numpy
 scipy
 python-dotenv
 catboost
+torch
+tqdm
+wandb
