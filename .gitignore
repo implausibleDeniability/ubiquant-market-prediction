@@ -1,4 +1,6 @@
 .ipynb_checkpoints/
 __pycache__/
-.env
 catboost_info/
+wandb/
+.env
+*.cbm
