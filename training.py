@@ -25,7 +25,7 @@ data_sample_frac = 1.0
 
 # hyperparameters
 batch_size = 25000
-epochs = 100
+epochs = 15
 investment_id_dropout = 0.01
 lr = 1e-3
 
