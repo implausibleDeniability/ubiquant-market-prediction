@@ -1,6 +1,8 @@
+import datetime
 import os
 from pathlib import Path
 
+import click
 import numpy as np
 import pandas as pd
 import torch
@@ -14,6 +16,7 @@ import wandb
 from src.data import Dataset
 from src.metrics import pearson_metric
 from src.torch_models import EmbedMLP
+from src.weights_logger import WeightsLogger
 
 # configs
 load_dotenv()
@@ -27,7 +30,9 @@ investment_id_dropout = 0.01
 lr = 1e-3
 
 
-def main():
+@click.command()
+@click.option("--exp_name", required=True, type=str, help="Name of experiment")
+def main(exp_name: str):
     data = load_data()
     train, test = make_splits(data)
     train, test = process_investment_id(train, test)
@@ -40,8 +45,11 @@ def main():
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
         optimizer, max_lr=0.01, epochs=epochs, steps_per_epoch=len(train_dataloader)
     )
-    wandb.init(project="market_prediction", entity="parmezano", name="training_script")
-    train_model(model, train_dataloader, test_dataloader, optimizer, scheduler)
+    wandb.init(project="market_prediction", entity="parmezano", name=exp_name)
+    weights_logger = WeightsLogger(os.environ["weights_dir"], exp_name)
+    train_model(
+        model, train_dataloader, test_dataloader, optimizer, scheduler, weights_logger
+    )
 
 
 def load_data() -> pd.DataFrame:
@@ -112,13 +120,16 @@ def eval_epoch_loss(model, dataloader, criterion):
     return losses
 
 
-def train_model(model, train_dataloader, test_dataloader, optimizer, scheduler):
+def train_model(
+    model, train_dataloader, test_dataloader, optimizer, scheduler, weights_logger
+) -> None:
     criterion = nn.MSELoss()
     for i in range(epochs):
         train_losses = train_epoch(
             model, train_dataloader, optimizer, scheduler, criterion
         )
         test_losses = eval_epoch_loss(model, test_dataloader, criterion)
+        weights_logger.save(model.state_dict())
         wandb.log(
             {
                 "train_loss": np.mean(train_losses, axis=0),
