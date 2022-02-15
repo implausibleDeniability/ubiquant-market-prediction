@@ -31,9 +31,14 @@ lr = 1e-3
 
 
 @click.command()
-@click.option("--exp_name", required=True, type=str, help="Name of experiment")
-def main(exp_name: str):
-    data = load_data()
+@click.option("--exp-name", type=str, default="unnamed_run", help="Name of experiment")
+@click.option("--debug", is_flag=True, default=False)
+def main(exp_name: str, debug: bool):
+    if debug:
+        wandb_mode = "disabled"
+    else:
+        wandb_mode = "enabled"
+    data = load_data(debug=debug)
     train, test = make_splits(data)
     train, test = process_investment_id(train, test)
     train, test = train.drop("time_id", axis=1), test.drop("time_id", axis=1)
@@ -45,16 +50,21 @@ def main(exp_name: str):
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
         optimizer, max_lr=0.01, epochs=epochs, steps_per_epoch=len(train_dataloader)
     )
-    wandb.init(project="market_prediction", entity="parmezano", name=exp_name)
-    weights_logger = WeightsLogger(os.environ["weights_dir"], exp_name)
+    wandb.init(
+        project="market_prediction", entity="parmezano", name=exp_name, mode=wandb_mode
+    )
+    weights_logger = WeightsLogger(os.environ["weights_dir"], exp_name, debug)
     train_model(
         model, train_dataloader, test_dataloader, optimizer, scheduler, weights_logger
     )
 
 
-def load_data() -> pd.DataFrame:
+def load_data(debug=False) -> pd.DataFrame:
     dataset_dir = Path(os.environ["dataset_dir"])
-    data = pd.read_csv(dataset_dir / "train.csv")
+    if debug:
+        data = pd.read_csv(dataset_dir / "train_sample.csv", index_col=0)
+    else:
+        data = pd.read_csv(dataset_dir / "train.csv")
     data = data.set_index("row_id")
     data = data.sample(
         frac=data_sample_frac
