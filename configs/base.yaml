@@ -1,0 +1,5 @@
+batch_size: 25000
+epochs: 15
+investment_id_dropout: 0.01
+lr: 0.001
+data_sample_frac: 1.0
