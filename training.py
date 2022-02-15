@@ -37,7 +37,7 @@ def main(exp_name: str, debug: bool):
     if debug:
         wandb_mode = "disabled"
     else:
-        wandb_mode = "enabled"
+        wandb_mode = "online"
     data = load_data(debug=debug)
     train, test = make_splits(data)
     train, test = process_investment_id(train, test)
