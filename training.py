@@ -44,7 +44,10 @@ def main(exp_name: str, config: str, debug: bool, cpu: bool):
 
     train_dataloader = DataLoader(Dataset(train), batch_size=wandb.config["batch_size"])
     test_dataloader = DataLoader(Dataset(test), batch_size=wandb.config["batch_size"])
-    model = EmbedMLP(input_dim=301, num_embeddings=3775).to(wandb.config["device"])
+    model = EmbedMLP(
+        input_dim=301, num_embeddings=3775, dropout=wandb.config["dropout"]
+    )
+    model = model.to(wandb.config["device"])
     optimizer = torch.optim.AdamW(model.parameters(), lr=wandb.config["lr"])
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
         optimizer,
