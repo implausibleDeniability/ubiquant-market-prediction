@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 
+
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, data):
         self.x = data.drop("target", axis=1).to_numpy(dtype=np.float32)
@@ -8,6 +9,6 @@ class Dataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         return self.x[idx], self.y[idx]
-    
+
     def __len__(self,):
         return len(self.x)
