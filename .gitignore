@@ -2,5 +2,6 @@
 __pycache__/
 catboost_info/
 wandb/
+weights/
 .env
 *.cbm
