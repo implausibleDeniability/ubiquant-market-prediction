@@ -40,6 +40,7 @@ class EmbedMLP(nn.Module):
         activation=nn.ReLU,
         num_embeddings=3775,
         embedding_dim=64,
+        dropout=0.0,
     ):
         """Same MLP, but takes the 0th feature and applies it as an embedding
         See the first two lines of forward call for details
@@ -53,7 +54,7 @@ class EmbedMLP(nn.Module):
         self.main = nn.Sequential(
             OrderedDict(
                 [
-                    (f"hid_{i}", ResidualBlock(hidden_dim, activation))
+                    (f"hid_{i}", ResidualBlock(hidden_dim, activation, dropout))
                     for i in range(depth)
                 ]
             )
@@ -72,15 +73,17 @@ class EmbedMLP(nn.Module):
 
 
 class ResidualBlock(nn.Module):
-    def __init__(self, dim, activation):
+    def __init__(self, dim, activation, dropout):
         super(ResidualBlock, self).__init__()
         self.main = nn.Sequential(
             nn.Linear(dim, dim),
             activation(),
             nn.BatchNorm1d(dim),
+            nn.Dropout(dropout),
             nn.Linear(dim, dim),
             activation(),
             nn.BatchNorm1d(dim),
+            nn.Dropout(dropout),
         )
 
     def forward(self, x):
