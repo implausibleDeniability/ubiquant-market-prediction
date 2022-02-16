@@ -26,10 +26,6 @@ class MLP(nn.Module):
         x = self.tail(x)
         return x
 
-        def forward(self, x):
-            output = self.main(x)
-            return output + x
-
 
 class EmbedMLP(nn.Module):
     def __init__(
