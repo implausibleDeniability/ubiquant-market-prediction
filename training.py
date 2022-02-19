@@ -35,7 +35,7 @@ def main(exp_name: str, config: str, debug: bool, cpu: bool):
     )
     with open(f"configs/{config}.yaml", "r") as stream:
         wandb.config = yaml.safe_load(stream)
-    wandb.config["device"] = "cpu" if cpu else "cuda"
+    wandb.config["device"] = "cpu" if cpu else "cuda:0"
 
     data = load_data(debug=debug)
     train, test = make_splits(data)
@@ -77,7 +77,7 @@ def load_data(debug=False) -> pd.DataFrame:
     return data
 
 
-def make_splits(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+def make_splits(data: pd.DataFrame) -> tuple:
     # train on earlier data, test on later data
     train = data.query("time_id < 1000")
     test = data.query("time_id >= 1000")
@@ -86,7 +86,7 @@ def make_splits(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def process_investment_id(
     train: pd.DataFrame, test: pd.DataFrame
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple:
     learned_investments = train.investment_id.unique()
     new_investments_in_test = test.query(
         "investment_id not in @learned_investments"
@@ -101,7 +101,7 @@ def make_datasets(train: pd.DataFrame, test: pd.DataFrame):
     return train_dataset, test_dataset
 
 
-def train_epoch(model, dataloader, optimizer, scheduler, criterion) -> list[float]:
+def train_epoch(model, dataloader, optimizer, scheduler, criterion) -> list:
     model.train()
     losses = []
     investment_id_dropout = wandb.config["investment_id_dropout"]
