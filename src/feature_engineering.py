@@ -49,3 +49,15 @@ def compute_kmeans_clusters(dataframes: list, n_clusters: int=200) -> list:
         transformed_df = pd.concat([df, cluster_distances], axis=1)  
         transformed_dataframes.append(transformed_df)
     return transformed_dataframes
+
+
+def zero_to_bool(data: pd.DataFrame) -> pd.DataFrame:
+    new_columns = []
+    for i in tqdm(range(300)):
+        feature = data[f'f_{i}'].copy()
+        if sum(abs(feature) < 1e-6) > 500:
+            new_columns.append(abs(feature) < 1e-6)
+            new_columns[-1].name += '_is_0'
+    data_zeros = pd.concat(new_columns, axis=1)
+    data = pd.concat([data, data_zeros], axis=1)
+    return data
