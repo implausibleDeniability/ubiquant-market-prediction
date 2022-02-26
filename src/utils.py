@@ -1,8 +1,8 @@
 import os
-from pathlib import Path
-
 import pandas as pd
+from pathlib import Path
 from dotenv import load_dotenv
+
 
 def make_sample():
     load_dotenv()
