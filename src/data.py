@@ -19,14 +19,17 @@ class Dataset(torch.utils.data.Dataset):
 
     
 def load_data(use_feather=False, split_data=True, batch_size=25000):
-    """
-    Method used to construct dataloader for Ubiquant train dataset.
+    """Method used to construct dataloader for Ubiquant train dataset.
+    
     Can use feather format to optimize the loading: ~176.26 s. vs ~9.30 s.
     for .csv vs .feather respectfully.
-    :param use_feather: flag to use optimized loading
-    :param split_data: flag to split the data into train and test (ids > 1000)
-    :param batch_size: batch size 
-    :return: train, test loader (if not split_data returns None)
+    
+    Args:
+        use_feather: flag to use optimized loading
+        split_data: flag to split the data into train and test (ids > 1000)
+        batch_size: batch size 
+    Returns:
+        train and test dataloaders (if not split_data returns None)
     """
     start_execution = time.time()
     csv_file = 'train.csv'
