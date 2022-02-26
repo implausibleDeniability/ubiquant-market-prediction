@@ -2,6 +2,8 @@ import torch
 from torch import nn
 from collections import OrderedDict
 from math import log10
+from .aux import ResidualBlock, BlockAE
+from .utils import closest_power_of_2
 
 
 class MLP(nn.Module):
@@ -69,24 +71,6 @@ class EmbedMLP(nn.Module):
         return x
 
 
-class ResidualBlock(nn.Module):
-    def __init__(self, dim, activation, dropout):
-        super(ResidualBlock, self).__init__()
-        self.main = nn.Sequential(
-            nn.Linear(dim, dim),
-            activation(),
-            nn.BatchNorm1d(dim),
-            nn.Dropout(dropout),
-            nn.Linear(dim, dim),
-            activation(),
-            nn.BatchNorm1d(dim),
-            nn.Dropout(dropout),
-        )
-
-    def forward(self, x):
-        output = self.main(x)
-        return output + x
-
 
 class MLPLogExtended(nn.Module):
     def __init__(self, input_dim=300, hidden_dim=100, depth=2, activation=nn.ReLU):
@@ -96,16 +80,7 @@ class MLPLogExtended(nn.Module):
     def forward(self, x):
         x = torch.cat([x, torch.log(x)], dim=1)
         x = self.main(x)
-        return x
-
-    
-def closest_power_of_2(n):
-    res = 0;
-    for i in range(n, 0, -1):
-        if ((i & (i - 1)) == 0):
-            res = i
-            break
-    return res    
+        return x  
 
 
 class MLPAE(nn.Module):
@@ -161,16 +136,3 @@ class MLPAE(nn.Module):
         predicted = self.mlp(extended)        
         mapping = self.ae_decoder(representation)
         return mapping, predicted
-
-        
-class BlockAE(nn.Module):
-    def __init__(self, input_dim, output_dim, activation):
-        super(BlockAE, self).__init__()
-        self.main = nn.Sequential(
-            nn.Linear(input_dim, output_dim),
-            activation()
-        )
-        
-    def forward(self, x):
-        out = self.main(x)
-        return out
