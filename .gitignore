@@ -5,3 +5,6 @@ wandb/
 weights/
 .env
 *.cbm
+*.pth
+*.pt
+*.onnx
