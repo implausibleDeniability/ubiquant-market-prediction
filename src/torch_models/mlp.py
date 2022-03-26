@@ -30,6 +30,50 @@ class MLP(nn.Module):
         return x
 
 
+class EmbedMLPFirst2All(nn.Module):
+    def __init__(
+        self,
+        input_dim=300,
+        hidden_dim=100,
+        depth=2,
+        activation=nn.ReLU,
+        num_embeddings=3775,
+        embedding_dim=64,
+        dropout=0.0,
+    ):
+        """Same MLP, but takes the 0th feature and applies it as an embedding
+        See the first two lines of forward call for details
+        """
+
+        super(EmbedMLPFirst2All, self).__init__()
+
+        self.embedder = nn.Embedding(num_embeddings, embedding_dim)
+        self.fc0 = nn.Linear(input_dim - 1 + embedding_dim, hidden_dim)
+        self.activation = activation()
+        self.main = nn.Sequential(
+            OrderedDict(
+                [
+                    (f"hid_{i}", ResidualBlock(hidden_dim, activation, dropout))
+                    for i in range(depth)
+                ]
+            )
+        )
+        self.tail = nn.Linear(hidden_dim, 1)
+
+    def forward(self, x):
+        embedding = self.embedder(x[:, 0].long())
+        x = torch.cat([embedding, x[:, 1:]], dim=1)
+
+        x = self.fc0(x)
+        x_zeroth = x
+        for res_block in self.main:
+            x = self.activation(x)
+            x = res_block(x)
+            x = x + x_zeroth
+        x = self.tail(x)
+        return x
+
+
 class EmbedMLP(nn.Module):
     def __init__(
         self,
